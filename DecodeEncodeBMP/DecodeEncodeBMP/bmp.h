@@ -43,7 +43,7 @@ typedef struct BitmapFile
  * @param bitmapFile the BitmapFile to read the data into
  * @return 0 upon success, -1 otherwise
  */
-int loadBmpFile(char *path, BitmapFile **bitmapFile)
+int loadBmpFile(const char *path, BitmapFile **bitmapFile)
 {
 	FILE *fp;
 	*bitmapFile = nullptr;

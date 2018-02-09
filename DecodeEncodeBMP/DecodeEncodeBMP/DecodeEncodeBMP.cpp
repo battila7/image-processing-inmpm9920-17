@@ -2,28 +2,35 @@
 //
 
 #include "stdafx.h"
-#include <GLFW/glfw3.h>
 #include "bmp.h"
+
+void printUsage();
 
 int main(int argc, char **argv)
 {
 	if (argc < 3)
 	{
+		printUsage();
+
 		return -1;
 	}
 
-	char *inputPath = argv[1], *outputPath = argv[2];
+	const char *inputPath = argv[1], *outputPath = argv[2];
 
 	BitmapFile *bitmapFile;
 	char *data;
 
 	if (loadBmpFile(inputPath, &bitmapFile))
 	{
+		printf("Could not load BMP file \"%s\"!\n", inputPath);
+
 		return -1;
 	}
 
 	if (writeBmpFile(outputPath, bitmapFile))
 	{
+		printf("Could not save BMP file \"%s\"!\n", outputPath);
+
 		return -1;
 	}
 
@@ -31,6 +38,8 @@ int main(int argc, char **argv)
 
 	if (!glfwInit())
 	{
+		printf("Failed to initialize GLFW!\n");
+
 		return -1;
 	}
 
@@ -38,6 +47,8 @@ int main(int argc, char **argv)
 
 	if (!window)
 	{
+		printf("Failed to create viewer window!\n");
+
 		glfwTerminate();
 
 		return -1;
@@ -63,4 +74,10 @@ int main(int argc, char **argv)
 	free(bitmapFile);
 
 	return 0;
+}
+
+void printUsage()
+{
+	printf("Hey, ya! Having problems running the state-of-art BMP Viewer? Check this out, chap:\n");
+	printf("\nDecodeEncodeBMP <input.file> <output.file>\n");
 }
