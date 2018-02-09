@@ -35,6 +35,9 @@
     <ClCompile Include="DecodeEncodeBMP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
