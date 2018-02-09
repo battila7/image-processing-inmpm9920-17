@@ -5,12 +5,24 @@
 #include <GLFW/glfw3.h>
 #include "bmp.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
+	if (argc < 3)
+	{
+		return -1;
+	}
+
+	char *inputPath = argv[1], *outputPath = argv[2];
+
 	BitmapFile *bitmapFile;
 	char *data;
 
-	if (load_bitmap_file("C:\\Users\\Attila\\bmp.bmp", &bitmapFile))
+	if (loadBmpFile(inputPath, &bitmapFile))
+	{
+		return -1;
+	}
+
+	if (writeBmpFile(outputPath, bitmapFile))
 	{
 		return -1;
 	}
@@ -22,7 +34,6 @@ int main(void)
 		return -1;
 	}
 
-	
 	window = glfwCreateWindow(bitmapFile->infoHeader.width, bitmapFile->infoHeader.height, "BMP Viewer", NULL, NULL);
 
 	if (!window)
@@ -46,6 +57,10 @@ int main(void)
 	}
 
 	glfwTerminate();
+
+	free(bitmapFile->imageData);
+	
+	free(bitmapFile);
 
 	return 0;
 }
