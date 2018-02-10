@@ -1,6 +1,3 @@
-// DecodeEncodeBMP.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
 #include "bmp.h"
 
@@ -8,6 +5,9 @@ void printUsage();
 
 int main(int argc, char **argv)
 {
+	/*
+	 * The input and output file path are required parameters.
+	 */
 	if (argc < 3)
 	{
 		printUsage();
@@ -18,7 +18,6 @@ int main(int argc, char **argv)
 	const char *inputPath = argv[1], *outputPath = argv[2];
 
 	BitmapFile *bitmapFile;
-	char *data;
 
 	if (loadBmpFile(inputPath, &bitmapFile))
 	{
@@ -43,6 +42,10 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	/*
+	 * The window is the same size as the image, which is kinda unsafe for larger
+	 * images but works fairly well for our case.
+	 */
 	window = glfwCreateWindow(bitmapFile->infoHeader.width, bitmapFile->infoHeader.height, "BMP Viewer", NULL, NULL);
 
 	if (!window)
@@ -59,7 +62,11 @@ int main(int argc, char **argv)
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		
+		/*
+		 * Actually, there's no need for this many redraws, but hey
+		 * this is just a simple BMP Viewer, it ain't gonna crash your PC.
+		 */
 		glDrawPixels(bitmapFile->infoHeader.width, bitmapFile->infoHeader.height, GL_BGR_EXT, GL_UNSIGNED_BYTE, bitmapFile->imageData);
 
 		glfwSwapBuffers(window);
