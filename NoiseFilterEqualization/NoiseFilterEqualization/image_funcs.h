@@ -3,6 +3,7 @@
 
 #include <random>
 #include <cstdint>
+#include <algorithm>
 
 enum Component
 {
@@ -116,11 +117,68 @@ int meanFilter(unsigned char **data, const int width, const int height, const in
 	return 0;
 }
 
+int medianFilter(unsigned char **data, const int width, const int height, const int windowSize)
+{
+	if (!(windowSize % 2))
+	{
+		return -1;
+	}
+
+	std::vector<int> window(windowSize * windowSize - 1);
+
+	const int dataSize = height * width * COMPONENT_COUNT;
+
+	unsigned char *result = new unsigned char[dataSize];
+
+	const int borderSize = windowSize / 2;
+
+	memcpy_s(result, dataSize, *data, dataSize);
+
+	for (int y = borderSize; y < (height - borderSize); ++y)
+	{
+		for (int x = borderSize; x < (width - borderSize); ++x)
+		{
+			int windowIndex = 0;
+
+			for (int windowY = -borderSize; windowY <= borderSize; ++windowY)
+			{
+				for (int windowX = -borderSize; windowX <= borderSize; ++windowX)
+				{
+					if (windowY == 0 && windowX == 0)
+					{
+						continue;
+					}
+
+					window[windowIndex++] = (*data)[indexOf(x + windowX, y + windowY, width)];
+				}
+			}
+
+			const int centerIndex = window.size() / 2;
+
+			std::nth_element(window.begin(), window.begin() + centerIndex, window.end());
+			std::nth_element(window.begin(), window.begin() + centerIndex + 1, window.end());
+
+			const int newValue = (window[centerIndex] + window[centerIndex + 1]) / 2;
+			const int centerPosition = indexOf(x, y, width);
+
+			memset(result + centerPosition, newValue, COMPONENT_COUNT);
+		}
+	}
+
+	delete *data;
+
+	*data = result;
+
+	return 0;
+}
+
 int additiveBinaryNoise(unsigned char *data, const int width, const int height, const int percentage)
 {
 	std::random_device randomDevice;
 	std::mt19937 generator(randomDevice());
 	std::uniform_int_distribution<> distribution(0, 99);
+
+	int changedCount = 0;
 
 	for (int y = 0; y < height; ++y)
 	{
@@ -128,12 +186,16 @@ int additiveBinaryNoise(unsigned char *data, const int width, const int height, 
 		{
 			if (distribution(generator) < percentage)
 			{
-				const int newValue = data[indexOf(x, y, width) + R] == MIN_RGB_VALUE ? MAX_RGB_VALUE : MIN_RGB_VALUE;
+				const int newValue = (data[indexOf(x, y, width) + R] == MIN_RGB_VALUE) ? MAX_RGB_VALUE : MIN_RGB_VALUE;
 
 				memset(data + indexOf(x, y, width), newValue, COMPONENT_COUNT);
+
+				changedCount++;
 			}
 		}
 	}
+
+	printf("Actual noise is %f%%.\n", 100.f * ((float)changedCount) / ((float)(width * height)));
 
 	return 0;
 }
@@ -192,5 +254,6 @@ int histogramEqualization(unsigned char *data, const int width, const int height
 	return 0;
 
 }
+
 }
 #endif
