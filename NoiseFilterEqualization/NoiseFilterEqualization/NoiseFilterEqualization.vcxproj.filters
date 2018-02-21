@@ -48,9 +48,4 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="skulluvmap.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
 </Project>
