@@ -94,16 +94,11 @@ int meanFilter(unsigned char **data, const int width, const int height, const in
 			{
 				for (int windowX = -borderSize; windowX <= borderSize; ++windowX)
 				{
-					if (windowY == 0 && windowX == 0)
-					{
-						continue;
-					}
-
 					sum += (*data)[indexOf(x + windowX, y + windowY, width)];
 				}
 			}
 
-			const int newValue = sum / ((windowSize * windowSize) - 1);
+			const int newValue = sum / (windowSize * windowSize);
 			const int centerPosition = indexOf(x, y, width);
 
 			memset(result + centerPosition, newValue, COMPONENT_COUNT);
@@ -124,7 +119,7 @@ int medianFilter(unsigned char **data, const int width, const int height, const 
 		return -1;
 	}
 
-	std::vector<int> window(windowSize * windowSize - 1);
+	std::vector<int> window(windowSize * windowSize);
 
 	const int dataSize = height * width * COMPONENT_COUNT;
 
@@ -144,21 +139,15 @@ int medianFilter(unsigned char **data, const int width, const int height, const 
 			{
 				for (int windowX = -borderSize; windowX <= borderSize; ++windowX)
 				{
-					if (windowY == 0 && windowX == 0)
-					{
-						continue;
-					}
-
 					window[windowIndex++] = (*data)[indexOf(x + windowX, y + windowY, width)];
 				}
 			}
 
-			const int centerIndex = window.size() / 2;
+			const int centerIndex = (window.size() / 2) + 1;
 
 			std::nth_element(window.begin(), window.begin() + centerIndex, window.end());
-			std::nth_element(window.begin(), window.begin() + centerIndex + 1, window.end());
 
-			const int newValue = (window[centerIndex] + window[centerIndex + 1]) / 2;
+			const int newValue = window[centerIndex];
 			const int centerPosition = indexOf(x, y, width);
 
 			memset(result + centerPosition, newValue, COMPONENT_COUNT);

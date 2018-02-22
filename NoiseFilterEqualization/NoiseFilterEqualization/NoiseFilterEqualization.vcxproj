@@ -23,7 +23,7 @@
     <ProjectGuid>{BCEA417A-FABC-45F7-9C1C-17223570A852}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>NoiseFilterEqualization</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
