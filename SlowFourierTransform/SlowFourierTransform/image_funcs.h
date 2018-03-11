@@ -54,6 +54,111 @@ void convertToGrayscale(unsigned char *data, const int width, const int height)
 	}
 }
 
+void toComplexImage(unsigned char *data, const int width, const int height, std::vector<std::complex<double>> &result)
+{
+	for (long y = 0; y < height; ++y)
+	{
+		for (long x = 0; x < width; ++x)
+		{
+			result.push_back(std::complex<double>(data[COMPONENT_COUNT * y * width + x * COMPONENT_COUNT], 0));
+		}
+	}
+}
+
+void sft(std::vector<std::complex<double>> &data, const int width, const int height, double sign, std::vector<std::complex<double>> &result)
+{
+	double size = (double)(width * height);
+
+	for (double v = 0; v < height; ++v)
+	{
+		for (double u = 0; u < width; ++u)
+		{
+			auto sum = std::complex<double>(0.0, 0.0);
+
+			for (double y = 0; y < height; ++y)
+			{
+				for (double x = 0; x < width; ++x)
+				{
+					double exponent = (v * y) / (double)height;
+					exponent += (u * x) / (double)width;
+					exponent *= sign * 2.0 * M_PI;
+
+					sum += data[y * width + x] * std::exp(std::complex<double>( 1, exponent ));
+				}
+			}
+
+			sum *= 1.0 / std::sqrt(size);
+
+			result.push_back(sum);
+		}
+	}
+}
+
+void flipQuadrants(std::vector<std::complex<double>> &data, const int width, const int height)
+{
+	// flip A and C
+	long halfHeight = height / 2, halfWidth = width / 2;
+
+	for (long y = 0; y < halfHeight; ++y)
+	{
+		for (long x = 0; x < halfWidth; ++x)
+		{
+			long posA = y * width + x;
+			long posC = (y + halfHeight) * width + (x + halfWidth);
+
+			std::complex<double> tmp = data[posC];
+			data[posC] = data[posA];
+			data[posA] = tmp;
+		}
+	}
+
+	// flip D and B
+	for (long y = 0; y < halfHeight; ++y)
+	{
+		for (long x = halfWidth; x < width; ++x)
+		{
+			long posD = y * width + x;
+			long posB = (y + halfHeight) * width + (x - halfWidth);
+
+			std::complex<double> tmp = data[posB];
+			data[posB] = data[posD];
+			data[posD] = tmp;
+		}
+	}
+}
+
+void extractMagnitude(std::vector<std::complex<double>> &data, const int width, const int height, std::vector<double> &result)
+{
+	double max = 0;
+
+	for (long i = 0; i < data.size(); ++i)
+	{
+		result.push_back(std::abs(data[i]));
+
+		if (result[i] > max)
+		{
+			max = result[i];
+		}
+	}
+
+	for (long i = 0; i < result.size(); ++i)
+	{
+		unsigned char res = (255.0 / std::log(1 + max)) * std::log(1 + result[i]);
+
+		result[i] = res;
+	}
+}
+
+void toBrightnessImage(std::vector<double> &data, std::vector<unsigned char> &result)
+{
+	for (long i = 0; i < data.size(); ++i)
+	{
+		result.push_back((unsigned char)data[i]);
+		result.push_back((unsigned char)data[i]);
+		result.push_back((unsigned char)data[i]);
+	}
+}
+
 void slowFourierTransform(unsigned char *data, const int width, const int height, std::vector<unsigned char> &outResult, double sign)
 {
 	using complex = std::complex<double>;
@@ -66,7 +171,7 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 	{
 		for (double u = 0; u < width; ++u)
 		{
-			//auto sum = complex(0.0, 0.0);
+			auto sum = complex(0.0, 0.0);
 
 			double re = 0;
 			double im = 0;
@@ -86,21 +191,21 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 
 					// double d = ((double)data[3 * y * width + x * 3]) / 255.0;
 
-					//exponent *= sign;
+					exponent *= sign;
 
-					//complex pointAt(data[3 * y * width + x * 3], 0);
+					complex pointAt(s, 0);
 
-					//sum += pointAt * std::exp(complex{ 1, exponent });
+					sum += pointAt * std::exp(complex{ 1, exponent });
 				}
 			}
 
-			//sum *= 1.0 / size;
+			sum *= 1.0 / std::sqrt(size);
 
 			re *= 1.0 / std::sqrt(size);
 			im *= 1.0 / std::sqrt(size);
 
-			//norms.push_back(std::abs(sum));
-			norms.push_back(std::sqrt(re * re + im * im));
+			norms.push_back(std::abs(sum));
+			//norms.push_back(std::sqrt(re * re + im * im));
 		}
 	}
 
