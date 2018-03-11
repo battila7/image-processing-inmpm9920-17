@@ -62,31 +62,45 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 
 	double size = (double)(width * height);
 
-	for (long v = 0; v < height; ++v)
+	for (double v = 0; v < height; ++v)
 	{
-		for (long u = 0; u < width; ++u)
+		for (double u = 0; u < width; ++u)
 		{
-			auto sum = complex(0.0, 0.0);
+			//auto sum = complex(0.0, 0.0);
 
-			for (long y = 0; y < height; ++y)
+			double re = 0;
+			double im = 0;
+
+			for (double y = 0; y < height; ++y)
 			{
-				for (long x = 0; x < width; ++x)
+				for (double x = 0; x < width; ++x)
 				{
 					double exponent = (v * y) / (double)height;
 					exponent += (u * x) / (double)width;
-					exponent *= sign * 2.0 * M_PI;
+					exponent *= 2.0 * M_PI;
+
+					double s = data[(long)(3.0 * y * width + x * 3.0)];
+
+					re += (double)s * std::cos(exponent);
+					im -= (double)s * std::sin(exponent);
 
 					// double d = ((double)data[3 * y * width + x * 3]) / 255.0;
 
-					complex pointAt(data[3 * y * width + x * 3], 0);
+					//exponent *= sign;
 
-					sum += pointAt * std::exp(complex{ 1, exponent });
+					//complex pointAt(data[3 * y * width + x * 3], 0);
+
+					//sum += pointAt * std::exp(complex{ 1, exponent });
 				}
 			}
 
-			sum *= 1.0 / size;
+			//sum *= 1.0 / size;
 
-			norms.push_back(std::abs(sum));
+			re *= 1.0 / std::sqrt(size);
+			im *= 1.0 / std::sqrt(size);
+
+			//norms.push_back(std::abs(sum));
+			norms.push_back(std::sqrt(re * re + im * im));
 		}
 	}
 
@@ -95,8 +109,6 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 	for (long i = 0; i < norms.size(); ++i)
 	{
 	    double res = std::log(1 + norms[i]);
-
-		norms[i] = res;
 
 		if (norms[i] < min)
 		{
@@ -107,6 +119,8 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 		{
 			max = norms[i];
 		}
+
+		//norms[i] = res;
 	}
 
 	for (long i = 0; i < norms.size(); ++i)
@@ -116,7 +130,7 @@ void slowFourierTransform(unsigned char *data, const int width, const int height
 		//unsigned char res = (unsigned char)(sc * std::log(1 + std::abs(norms[i])));
 
 		double sc = (norms[i] - min) / (max - min);
-		unsigned char res = 255.0 * norms[i];
+		unsigned char res = (255.0 / std::log(1 + max)) * std::log(1 + norms[i]);
 
 		outResult.push_back(res);
 		outResult.push_back(res);
