@@ -182,6 +182,60 @@ std::vector<CharacterPosition> createSegmentsFromImage(unsigned char *data, cons
 	return positions;
 }
 
+int firstNonBlankPixelBetweenColumns(unsigned char *data, const int width, const int line, const int firstColumn, const int lastColumn)
+{
+	for (int column = firstColumn; column < lastColumn; ++column)
+	{
+		const int index = line * width * COMPONENT_COUNT + column * COMPONENT_COUNT;
+
+		if (data[index] == 0)
+		{
+			return column;
+		}
+	}
+
+	return -1;
+}
+
+CharacterPosition refineSinglePosition(unsigned char *data, const int width, const int height, const CharacterPosition &position)
+{
+	CharacterPosition newPosition = position;
+
+	for (int line = position.topLeftLine; line < position.bottomRightLine; ++line)
+	{
+		if (firstNonBlankPixelBetweenColumns(data, width, line, position.topLeftColumn, position.bottomRightColumn) != -1)
+		{
+			newPosition.topLeftLine = line;
+
+			break;
+		}
+	}
+
+	for (int line = position.bottomRightLine; line > position.topLeftLine; --line)
+	{
+		if (firstNonBlankPixelBetweenColumns(data, width, line, position.topLeftColumn, position.bottomRightColumn) != -1)
+		{
+			newPosition.bottomRightLine = line;
+
+			break;
+		}
+	}
+
+	return newPosition;
+}
+
+std::vector<CharacterPosition> refineSegments(unsigned char *data, const int width, const int height, std::vector<imgf::CharacterPosition> &inputPositions)
+{
+	std::vector<CharacterPosition> outputPositions;
+
+	for (const CharacterPosition &position : inputPositions)
+	{
+		outputPositions.push_back(refineSinglePosition(data, width, height, position));
+	}
+
+	return outputPositions;
+}
+
 unsigned char *characterPositionToImageData(unsigned char *originalImage, const int width,  const CharacterPosition &position)
 {
 	int charSize = (position.bottomRightLine - position.topLeftLine + 1) * (position.bottomRightColumn - position.topLeftColumn + 1) * COMPONENT_COUNT;

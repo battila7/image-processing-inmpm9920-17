@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="image_funcs.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_image_resize.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
